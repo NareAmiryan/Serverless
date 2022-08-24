@@ -14,14 +14,43 @@ provider:
         - cognito-identity:*
         - cloudsearch:*
         - ssm:GetParameter
+        - cognito-idp:AdminCreateUser
       Resource:
         - '*'
   environment:
     DYNAMODB_USER_TABLE: ${self:service}-usertable-${sls:stage}
 
+custom:
+  userPoolName: test-user-pool-${sls:stage}
+  userPoolClientName: test-user-pool-client-${sls:stage}
+
 
 resources:
   Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        MfaConfiguration: OFF
+        UserPoolName: ${self:custom.userPoolName}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 6
+            RequireLowercase: False
+            RequireNumbers: True
+            RequireSymbols: False
+            RequireUppercase: True
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:custom.userPoolClientName}
+        GenerateSecret: False
+        UserPoolId:
+          Ref: CognitoUserPool
+      #
     UserTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -72,10 +101,14 @@ functions:
               - '*'
   createUsers:
     handler: createUser.createUsers
+    environment:
+      COGNITO_USER_POOL_ID: Ref !CognitoUserPool
     events:
       - http:
           path: /users
           method: post
+#      - cognitoUserPool:
+#          pool: ${self:provider.stage}MyUserPool
   getFromGSI:
     handler: getFromGSI.getFromGSI
     events:
