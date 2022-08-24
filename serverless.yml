@@ -1,0 +1,92 @@
+service: yes
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  iamRoleStatements:
+    - Effect: Allow # / Deny
+      Action:
+        - s3:*
+        - dynamodb:*
+        - cognito-idp:*
+        - cognito-identity:*
+        - cloudsearch:*
+        - ssm:GetParameter
+      Resource:
+        - '*'
+  environment:
+    DYNAMODB_USER_TABLE: ${self:service}-usertable-${sls:stage}
+
+
+resources:
+  Resources:
+    UserTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-usertable-${sls:stage}
+        AttributeDefinitions:
+          - AttributeName: name
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: name
+            KeyType: HASH
+          - AttributeName: email
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: Email-index
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+functions:
+  getUser:
+    handler: getUser.getUser
+    events:
+      - http:
+          path: /users/{name}
+          method: get
+          request:
+            parameters:
+              paths:
+                name: true
+          cors:
+            origin: '*'
+            headers:
+              - '*'
+  getUsers:
+    handler: getUsers.getUsers
+    events:
+      - http:
+          path: /users
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - '*'
+  createUsers:
+    handler: createUser.createUsers
+    events:
+      - http:
+          path: /users
+          method: post
+  getFromGSI:
+    handler: getFromGSI.getFromGSI
+    events:
+      - http:
+          path: /
+          method: get
+          request:
+            parameters:
+              paths:
+                name: true
+          cors:
+            origin: '*'
+            headers:
+              - '*'
