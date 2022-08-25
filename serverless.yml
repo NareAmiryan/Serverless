@@ -43,6 +43,10 @@ resources:
             RequireNumbers: True
             RequireSymbols: False
             RequireUppercase: True
+        Schema: # Custom user attributes defined here
+           - AttributeDataType: String
+             Mutable: true
+             Name: "password"
     CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
@@ -107,7 +111,11 @@ functions:
       - http:
           path: /users
           method: post
-#      - cognitoUserPool:
+    cors:
+      origin: '*'
+      headers:
+        - '*'
+  #      - cognitoUserPool:
 #          pool: ${self:provider.stage}MyUserPool
   getFromGSI:
     handler: getFromGSI.getFromGSI
@@ -119,6 +127,16 @@ functions:
             parameters:
               paths:
                 name: true
+          cors:
+            origin: '*'
+            headers:
+              - '*'
+  login:
+    handler: login.login
+    events:
+      - http:
+          path: /users/login
+          method: post
           cors:
             origin: '*'
             headers:

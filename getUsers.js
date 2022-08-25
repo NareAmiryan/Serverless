@@ -1,6 +1,6 @@
 'use strict'
 const AWS = require('aws-sdk')
-
+//Pagination
 module.exports.getUsers = async (event) => {
     console.log(event);
     const  { startKey, limit = 5, name }  = event.queryStringParameters;

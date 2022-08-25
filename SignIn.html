@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- Created By CodingNepal -->
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Login and Registration Form in HTML | CodingNepal</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="wrapper">
+  <div class="title-text">
+    <div class="title login">
+      LOGIN
+    </div>
+  </div>
+  <div class="form-container">
+    <div class="form-inner">
+      <form action="#" class="login">
+        <div class="field">
+          <input type="text" id='name' placeholder="Name" required>
+        </div>
+        <div class="field">
+          <input type="email" id='email'placeholder="Email" required>
+        </div>
+        <div class="field">
+          <input type="password" id='password'placeholder="Password" required>
+        </div>
+        <div class="field btn">
+          <div class="btn-layer"></div>
+          <input type="submit" onclick="getUser()" value="Login">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  const getUser= async()=> {
+    debugger;
+    const email = document.getElementById('email').value;
+    const name = document.getElementById('name').value;
+    const password = document.getElementById('password').value;
+    const res = await fetch('https://ff7nww65uc.execute-api.us-east-1.amazonaws.com/dev/users/login',{
+      method:'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      cache: 'default',
+      body: JSON.stringify({
+        email:email,
+        name:name,
+        password:password
+      })
+    })
+    const data=await res.json();
+    return data;
+  }
+</script>
+</body>
+</html>

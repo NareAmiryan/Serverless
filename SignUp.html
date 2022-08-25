@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+<div class="container">
+        <div class="header">
+
+            <h3>Sign Up</h3>
+
+        </div>
+        <div class="inputs">
+
+            <input type="email"  id="email"placeholder="e-mail" />
+            <input type="text"  id="name1" placeholder="name" />
+            <input type="password"  id="password" placeholder="password" />
+            <button id="post1" onclick="addUser()">SIGN UP</button>
+
+        </div>
+
+</div>
+
+<script>
+
+    const addUser= async()=> {
+        debugger;
+        const email = document.getElementById('email').value;
+        const name = document.getElementById('name1').value;
+        const password = document.getElementById('password').value;
+        alert(name);
+        alert(email);
+        // alert(password);
+        const res= await fetch('https://ff7nww65uc.execute-api.us-east-1.amazonaws.com/dev/users',{
+            method:'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            mode: 'cors',
+            cache: 'default',
+            body: JSON.stringify({
+                email:email,
+                name:name,
+                password:password
+                // password:password
+            })
+        })
+        const data=await res.json();
+        return data;
+    }
+</script>
+</body>
+</html>
