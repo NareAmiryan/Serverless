@@ -11,7 +11,7 @@
 <div class="wrapper">
   <div class="title-text">
     <div class="title login">
-      LOGIN
+      LOG IN
     </div>
   </div>
   <div class="form-container">
@@ -28,7 +28,7 @@
         </div>
         <div class="field btn">
           <div class="btn-layer"></div>
-          <input type="submit" onclick="getUser()" value="Login">
+          <input type="submit" onclick="getUser()" value="Log in">
         </div>
       </form>
     </div>
@@ -43,7 +43,8 @@
     const res = await fetch('https://ff7nww65uc.execute-api.us-east-1.amazonaws.com/dev/users/login',{
       method:'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       },
       mode: 'cors',
       cache: 'default',

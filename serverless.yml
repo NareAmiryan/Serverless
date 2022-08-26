@@ -1,5 +1,9 @@
 service: yes
 
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
 frameworkVersion: '3'
 
 provider:
@@ -78,6 +82,18 @@ resources:
               ProjectionType: ALL
         BillingMode: PAY_PER_REQUEST
 
+#    ServerlessApiGateWayAuthorizer:
+#      Type: AWS::ApiGateway::Authorizer
+#      Properties:
+#        Name: ${self:service}-rest-api-authorizer-${self:provider.stage}
+#        IdentitySource: method.request.header.Authorization
+#        RestApiId: !Ref ServerlessWebRestApi
+#        Type: COGNITO_USER_POOLS
+#        ProviderARNs:
+#          - Fn::GetAtt:
+#              - CognitoUsersPool
+#              - Arn
+
 functions:
   getUser:
     handler: getUser.getUser
@@ -111,10 +127,10 @@ functions:
       - http:
           path: /users
           method: post
-    cors:
-      origin: '*'
-      headers:
-        - '*'
+          cors:
+            origin: '*'
+            headers:
+              - '*'
   #      - cognitoUserPool:
 #          pool: ${self:provider.stage}MyUserPool
   getFromGSI:
@@ -132,7 +148,7 @@ functions:
             headers:
               - '*'
   login:
-    handler: login.login
+    handler: login.xxx
     events:
       - http:
           path: /users/login
@@ -141,3 +157,16 @@ functions:
             origin: '*'
             headers:
               - '*'
+#  getCars:
+#    handler: getCars.car
+#    events:
+#      - http:
+#          path: /users/{userId}/cars
+#          method: post
+#          authorizer:
+#            type: COGNITO_USER_POOLS
+#            authorizerId: !Ref ServerlessApiGateWayAuthorize
+#          cors:
+#            origin: '*'
+#            headers:
+#              - '*'
