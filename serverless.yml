@@ -9,6 +9,9 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs14.x
+  apiGateway:
+    restApiId: !Ref ApiGateway
+    restApiRootResourceId: !GetAtt ApiGateway.RootResourceId
   iamRoleStatements:
     - Effect: Allow # / Deny
       Action:
@@ -23,14 +26,36 @@ provider:
         - '*'
   environment:
     DYNAMODB_USER_TABLE: ${self:service}-usertable-${sls:stage}
+    DYNAMODB_CAR_TABLE: ${self:service}-carsTable-${sls:stage}
 
 custom:
   userPoolName: test-user-pool-${sls:stage}
   userPoolClientName: test-user-pool-client-${sls:stage}
 
-
 resources:
   Resources:
+    CarsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-carsTable-${sls:stage}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: carId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: carId
+            KeyType: RANGE
+        ProvisionedThroughput:
+          WriteCapacityUnits: 1
+          ReadCapacityUnits: 1
+
+    ApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: 'test-api'
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -58,7 +83,17 @@ resources:
         GenerateSecret: False
         UserPoolId:
           Ref: CognitoUserPool
-      #
+
+    ApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: cognito-authorizer
+        IdentitySource: method.request.header.Authorization
+        RestApiId: !Ref ApiGateway
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - !GetAtt CognitoUserPool.Arn
+
     UserTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -157,16 +192,30 @@ functions:
             origin: '*'
             headers:
               - '*'
-#  getCars:
-#    handler: getCars.car
-#    events:
-#      - http:
-#          path: /users/{userId}/cars
-#          method: post
-#          authorizer:
-#            type: COGNITO_USER_POOLS
-#            authorizerId: !Ref ServerlessApiGateWayAuthorize
-#          cors:
-#            origin: '*'
-#            headers:
-#              - '*'
+  getCars:
+    handler: getCars.cars
+    events:
+      - http:
+          path: /users/cars
+          method: get
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+          cors:
+            origin: '*'
+            headers:
+              - '*'
+
+  createCar:
+    handler: createCar.cars
+    events:
+      - http:
+          path: car
+          method: post
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+          cors:
+            origins: '*'
+            headers:
+              - '*'

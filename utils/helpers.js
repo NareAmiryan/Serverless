@@ -1,6 +1,6 @@
 
 const getResponse = (body, statusCode) => {
-    const {data = {}, error = ''} = body
+    const {data = {}, error = '' , ...otherParams} = body
 
     const config = {
         headers: {
@@ -15,14 +15,18 @@ const getResponse = (body, statusCode) => {
             body: JSON.stringify({
                 error
             }),
-            ...config
+            ...config,
+            ...otherParams
         }
     }
 
     return {
         statusCode,
-        body: JSON.stringify(data),
-        ...config
+        body: JSON.stringify({
+            data: data
+        }),
+        ...config,
+        ...otherParams
     }
 
 };
