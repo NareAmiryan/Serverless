@@ -29,7 +29,7 @@ module.exports.cars = async (event) => {
         };
             const db = new AWS.DynamoDB.DocumentClient();
             console.log(params);
-            let data = await db.scan(params).promise();
+            let data = await db.query(params).promise();
             data = data.Items.map(car => {
                 return {
                     userId:car.userId,
