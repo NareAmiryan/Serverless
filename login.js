@@ -55,7 +55,9 @@ module.exports.xxx = async (event) => {
         const user = await Auth.signIn(email, password);
         console.log(user);
         const token = Auth.currentSession().then(user => console.log(user.getIdToken().getJwtToken()))
-        return getResponse(token,200)
+        return getResponse({
+            data: token
+        } ,200)
     } catch (err) {
             return getResponse({
                 error: err.message

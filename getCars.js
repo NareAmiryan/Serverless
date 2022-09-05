@@ -6,7 +6,7 @@ const {getResponse} = require("./utils/helpers");
 module.exports.cars = async (event) => {
     try {
         console.log(event);
-        const username = event.requestContext?.authorizer?.claims?.["name"]
+        const userId = event.requestContext?.authorizer?.claims?.["cognito:username"]
         const authorizationHeader = event.headers.Authorization
 
         console.log(authorizationHeader);
@@ -21,17 +21,26 @@ module.exports.cars = async (event) => {
         const params = {
             TableName: process.env.DYNAMODB_CAR_TABLE,
             KeyConditions: {
-                "username": {
+                "userId": {
                     "ComparisonOperator": "EQ",
-                    "AttributeValueList": [username]
+                    "AttributeValueList": [userId]
                 }
             }
         };
-        const db = new AWS.DynamoDB.DocumentClient();
+            const db = new AWS.DynamoDB.DocumentClient();
             console.log(params);
-            const data = await db.scan(params).promise();
-            console.log(data);
-
+            let data = await db.scan(params).promise();
+            data = data.Items.map(car => {
+                return {
+                    userId:car.userId,
+                    carId:car.carId,
+                    carName:car.carName,
+                    carModel:car.carModel
+                }
+            })
+            return getResponse({
+                data
+            }, 200)
         } catch (err) {
             return getResponse({
                 error: err.message

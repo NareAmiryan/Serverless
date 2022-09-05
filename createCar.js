@@ -4,15 +4,17 @@ const AWS = require('aws-sdk');
 const {getResponse} = require("./utils/helpers");
 
 module.exports.cars = async (event) => {
-    try {
-        const username = event.requestContext?.authorizer?.claims?.['cognito:username']
-        const body = JSON.parse(event.body);
+        console.log(event);
+        const body=JSON.parse(event.body)
+        console.log(body);
+        const username = event.requestContext?.authorizer?.claims?.['cognito:username'];
         const dynamoDb = new AWS.DynamoDB.DocumentClient();
+        try {
         const putParams = {
             TableName: process.env.DYNAMODB_CAR_TABLE,
             Item: {
-                userId:username,
-                carID: body.carID,
+                userId: username,
+                carId: body.carId,
                 carName: body.carName,
                 carModel:body.carModel
             }
@@ -23,7 +25,8 @@ module.exports.cars = async (event) => {
         return getResponse({
             data:{
                 message: "Car is created successfully",
-                carID: body.carID,
+                userId: username,
+                carId: body.carId,
                 carName: body.carName,
                 carModel:body.carModel
             }
