@@ -3,6 +3,8 @@
 const AWS = require('aws-sdk');
 const {getResponse} = require("./utils/helpers");
 
+const { DYNAMODB_CAR_TABLE } = process.env;
+
 module.exports.cars = async (event) => {
         console.log(event);
         const body=JSON.parse(event.body)
@@ -11,7 +13,7 @@ module.exports.cars = async (event) => {
         const dynamoDb = new AWS.DynamoDB.DocumentClient();
         try {
         const putParams = {
-            TableName: process.env.DYNAMODB_CAR_TABLE,
+            TableName: DYNAMODB_CAR_TABLE,
             Item: {
                 userId: username,
                 carId: body.carId,

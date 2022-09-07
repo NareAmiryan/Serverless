@@ -1,15 +1,18 @@
 'use strict'
-const AWS = require('aws-sdk')
+import AWS from 'aws-sdk';
 const {getResponse} = require("./utils/helpers");
 
-
-module.exports.cars = async (event) => {
+const {DYNAMODB_CAR_TABLE} = process.env;
+ export const cars = async (event) => {
     try {
         console.log(event);
-        const userId = event.requestContext?.authorizer?.claims?.["cognito:username"]
-        const authorizationHeader = event.headers.Authorization
+        const {userId} = event.pathParameters;
+        console.log(userId);
 
-        console.log(authorizationHeader);
+        //const userId = event.requestContext?.authorizer?.claims?.["cognito:username"]
+        //const authorizationHeader = event.headers.Authorization
+        //
+        //console.log(authorizationHeader);
         // const user = await jwt.verify(token, process.env.TOKEN_SECRET_KEY);
         // console.log(`Hi ${name}`);
         // return getResponse({
@@ -17,9 +20,10 @@ module.exports.cars = async (event) => {
         //         message: `Hi ${name}`
         //     }
         // },200)
-        /////////////////////////////////Loading...
+
+
         const params = {
-            TableName: process.env.DYNAMODB_CAR_TABLE,
+            TableName: DYNAMODB_CAR_TABLE,
             KeyConditions: {
                 "userId": {
                     "ComparisonOperator": "EQ",

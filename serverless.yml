@@ -196,7 +196,7 @@ functions:
     handler: getCars.cars
     events:
       - http:
-          path: /users/cars
+          path: /user/{userId}/cars
           method: get
           authorizer:
             type: COGNITO_USER_POOLS
@@ -210,7 +210,7 @@ functions:
     handler: createCar.cars
     events:
       - http:
-          path: car
+          path: user/car
           method: post
           authorizer:
             type: COGNITO_USER_POOLS
