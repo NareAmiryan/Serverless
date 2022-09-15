@@ -2,6 +2,7 @@
 
 const AWS = require('aws-sdk');
 const {getResponse} = require("./utils/helpers");
+const pg = require('pg');
 
 const { DYNAMODB_CAR_TABLE } = process.env;
 
@@ -10,6 +11,7 @@ module.exports.cars = async (event) => {
         const body=JSON.parse(event.body)
         console.log(body);
         const username = event.requestContext?.authorizer?.claims?.['cognito:username'];
+
         const dynamoDb = new AWS.DynamoDB.DocumentClient();
         try {
         const putParams = {
@@ -40,3 +42,19 @@ module.exports.cars = async (event) => {
         },400)
     }
 }
+
+
+//{
+//     "Version": "2012-10-17",
+//     "Statement": [
+//         {
+//             "Effect": "Allow",
+//             "Action": [
+//                 "rds-db:connect"
+//             ],
+//             "Resource": [
+//                 "arn:aws:rds-db:ap-southeast-2:xxxxxxxxx:dbuser:prx-0f9d9414be09b1c57/dev_rds_user"
+//             ]
+//         }
+//     ]
+// }

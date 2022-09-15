@@ -9,6 +9,9 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs14.x
+  region: us-east-1
+#  stage: ${opt:stage, 'dev'}
+  stage: 'dev'
   apiGateway:
     restApiId: !Ref ApiGateway
     restApiRootResourceId: !GetAtt ApiGateway.RootResourceId
@@ -22,100 +25,152 @@ provider:
         - cloudsearch:*
         - ssm:GetParameter
         - cognito-idp:AdminCreateUser
+        - ec2:AssignPrivateIpAddresses
+        - ec2:AuthorizeSecurityGroupIngress
+        - ec2:CreateNetworkInterface
+        - ec2:CreateSecurityGroup
+        - ec2:DeleteNetworkInterface
+        - ec2:DeleteSecurityGroup
+        - ec2:DescribeAvailabilityZones
+        - ec2:DescribeInternetGateways
+        - ec2:DescribeSecurityGroups
+        - ec2:DescribeSubnets
+        - ec2:DescribeVpcAttribute
+        - ec2:DescribeVpcs
+        - ec2:ModifyNetworkInterfaceAttribute
+        - ec2:RevokeSecurityGroupIngress
+        - ec2:UnassignPrivateIpAddresses
+        - ssm:GetParameters
+        - sns:ListTopic
+        - sns:Publish
       Resource:
         - '*'
+#    - Effect: Allow
+#      Action:
+#       - rds-db:connect
+#      Resource: arn:aws:rds:us-east-1:924051422486:db-proxy:prx-081329a95f68ec118
+  vpc:
+    securityGroupIds:
+      - !Ref LambdaSecurityGroup
+    subnetIds:
+      - !Ref SubnetA
+      - !Ref SubnetB
   environment:
     DYNAMODB_USER_TABLE: ${self:service}-usertable-${sls:stage}
     DYNAMODB_CAR_TABLE: ${self:service}-carsTable-${sls:stage}
+    DB_NAME: ${self:custom.DB_NAME}
+    DB_USER: ${self:custom.DB_USERNAME}
+    DB_PASS: ${self:custom.DB_PASSWORD}
+    DB_PORT: ${self:custom.DB_PORT}
+    DB_HOST: ${self:custom.PROXY_ENDPOINT}
+#    DB_HOST: 'sdbsdjs'
 
 custom:
   userPoolName: test-user-pool-${sls:stage}
   userPoolClientName: test-user-pool-client-${sls:stage}
+  esbuild:
+    minify: true
+    external:
+        - pg-native
+  developerStage: ${env:DEVELOPER_IDENTIFIER,'local'}
+  DB_NAME: kms_db_${self:provider.stage}
+#  DB_USERNAME: ${ssm:/kms-${self:provider.stage}/db_username}
+#  DB_PASSWORD: ${ssm:/kms-${self:provider.stage}/db_password}
+  DB_USERNAME: postgres
+  DB_PASSWORD: nare12345
+  DB_PORT: !GetAtt RDSInstance.Endpoint.Port
+  PROXY_ENDPOINT: !GetAtt RDSProxy.Endpoint
+  PROXY_NAME: kms-db-proxy-${self:provider.stage}
+  VPC_CIDR: 10
 
 resources:
-  Resources:
-    CarsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:service}-carsTable-${sls:stage}
-        AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: carId
-            AttributeType: S
-        KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
-          - AttributeName: carId
-            KeyType: RANGE
-        ProvisionedThroughput:
-          WriteCapacityUnits: 1
-          ReadCapacityUnits: 1
+  - ${file(VpcResources.yml)}
+  - ${file(RdsResources.yml)}
+  - ${file(RoutingResources.yml)}
+  - ${file(RdsProxyResources.yml)}
+  - Resources:
+      CarsTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: ${self:service}-carsTable-${sls:stage}
+          AttributeDefinitions:
+            - AttributeName: userId
+              AttributeType: S
+            - AttributeName: carId
+              AttributeType: S
+          KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
+            - AttributeName: carId
+              KeyType: RANGE
+          ProvisionedThroughput:
+            WriteCapacityUnits: 1
+            ReadCapacityUnits: 1
 
-    ApiGateway:
-      Type: AWS::ApiGateway::RestApi
-      Properties:
-        Name: 'test-api'
-    CognitoUserPool:
-      Type: AWS::Cognito::UserPool
-      Properties:
-        MfaConfiguration: OFF
-        UserPoolName: ${self:custom.userPoolName}
-        UsernameAttributes:
-          - email
-        AutoVerifiedAttributes:
-          - email
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 6
-            RequireLowercase: False
-            RequireNumbers: True
-            RequireSymbols: False
-            RequireUppercase: True
-        Schema: # Custom user attributes defined here
-           - AttributeDataType: String
-             Mutable: true
-             Name: "password"
-    CognitoUserPoolClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        ClientName: ${self:custom.userPoolClientName}
-        GenerateSecret: False
-        UserPoolId:
-          Ref: CognitoUserPool
+      ApiGateway:
+        Type: AWS::ApiGateway::RestApi
+        Properties:
+          Name: 'test-api'
+      CognitoUserPool:
+        Type: AWS::Cognito::UserPool
+        Properties:
+          MfaConfiguration: OFF
+          UserPoolName: ${self:custom.userPoolName}
+          UsernameAttributes:
+            - email
+          AutoVerifiedAttributes:
+            - email
+          Policies:
+            PasswordPolicy:
+              MinimumLength: 6
+              RequireLowercase: False
+              RequireNumbers: True
+              RequireSymbols: False
+              RequireUppercase: True
+          Schema: # Custom user attributes defined here
+             - AttributeDataType: String
+               Mutable: true
+               Name: "password"
+      CognitoUserPoolClient:
+        Type: AWS::Cognito::UserPoolClient
+        Properties:
+          ClientName: ${self:custom.userPoolClientName}
+          GenerateSecret: False
+          UserPoolId:
+            Ref: CognitoUserPool
 
-    ApiGatewayAuthorizer:
-      Type: AWS::ApiGateway::Authorizer
-      Properties:
-        Name: cognito-authorizer
-        IdentitySource: method.request.header.Authorization
-        RestApiId: !Ref ApiGateway
-        Type: COGNITO_USER_POOLS
-        ProviderARNs:
-          - !GetAtt CognitoUserPool.Arn
+      ApiGatewayAuthorizer:
+        Type: AWS::ApiGateway::Authorizer
+        Properties:
+          Name: cognito-authorizer
+          IdentitySource: method.request.header.Authorization
+          RestApiId: !Ref ApiGateway
+          Type: COGNITO_USER_POOLS
+          ProviderARNs:
+            - !GetAtt CognitoUserPool.Arn
 
-    UserTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:service}-usertable-${sls:stage}
-        AttributeDefinitions:
-          - AttributeName: name
-            AttributeType: S
-          - AttributeName: email
-            AttributeType: S
-        KeySchema:
-          - AttributeName: name
-            KeyType: HASH
-          - AttributeName: email
-            KeyType: RANGE
-        GlobalSecondaryIndexes:
-          - IndexName: Email-index
-            KeySchema:
-              - AttributeName: email
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-        BillingMode: PAY_PER_REQUEST
+      UserTable:
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: ${self:service}-usertable-${sls:stage}
+          AttributeDefinitions:
+            - AttributeName: name
+              AttributeType: S
+            - AttributeName: email
+              AttributeType: S
+          KeySchema:
+            - AttributeName: name
+              KeyType: HASH
+            - AttributeName: email
+              KeyType: RANGE
+          GlobalSecondaryIndexes:
+            - IndexName: Email-index
+              KeySchema:
+                - AttributeName: email
+                  KeyType: HASH
+              Projection:
+                ProjectionType: ALL
+          BillingMode: PAY_PER_REQUEST
 
 #    ServerlessApiGateWayAuthorizer:
 #      Type: AWS::ApiGateway::Authorizer
@@ -219,3 +274,32 @@ functions:
             origins: '*'
             headers:
               - '*'
+
+  createCarInSQL:
+    handler: withProxy.createCarInSQL
+    timeout: 900
+    url: true
+    events:
+      - http:
+          path: withProxy/users/createCar
+          method: post
+          cors:
+            origins: '*'
+            headers:
+              - '*'
+
+  SequelizeCreateCar:
+    handler: createCarInSequelize.cars
+    events:
+      - http:
+          path: createCarInSequelize/users/createcars
+          method: post
+          cors:
+            origins: '*'
+            headers:
+              - '*'
+#    vpc:
+#      securityGroupIds:
+#          -${LambdaSecurityGroup}
+#      subnetIds:
+#          -${SubnetA}
