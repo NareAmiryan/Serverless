@@ -2,20 +2,20 @@ const { Sequelize,Model , DataTypes } = require('sequelize')
 
 module.exports = function (sequelize, DataTypes) {
     const cars = sequelize.define("cars", {
-        carId: {
+        cars_id: {
             type: DataTypes.STRING,
             allowNull: false,
             primaryKey:true
         },
-        userId: {
+        user_id: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        carName: {
+        cars_name: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        carModel:{
+        cars_model:{
             type: DataTypes.STRING,
             allowNull: false
         }

@@ -2,8 +2,8 @@
   "development": {
     "username": "postgres",
     "password": "nare12345",
-    "database": "database-nare",
-    "host": "yes-dev-rdsinstance-racxfkukgvco.chxqzuiyjhbm.us-east-1.rds.amazonaws.com",
+    "database": "kms_db_dev",
+    "host": "kms-db-proxy-dev.proxy-chxqzuiyjhbm.us-east-1.rds.amazonaws.com",
     "dialect": "postgres"
   },
   "test": {
