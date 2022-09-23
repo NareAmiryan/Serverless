@@ -1,6 +1,7 @@
 const { Client } = require('pg')
 
-module.exports.createCarInSQL = async (event) => {
+const createCarInSQL = async (event) => {
+    try{
     console.log(event);
     const {carId,userId,carName,carModel} = JSON.parse(event.body);
     console.log(carId,userId,carName,carModel);
@@ -19,8 +20,6 @@ module.exports.createCarInSQL = async (event) => {
         host: process.env.DB_HOST,
         port: process.env.DB_PORT,
     })
-
-    try {
         console.log('Connecting to database')
         const resp = await client.connect()
 
@@ -43,3 +42,4 @@ module.exports.createCarInSQL = async (event) => {
     });
 }
 
+module.exports=createCarInSQL;

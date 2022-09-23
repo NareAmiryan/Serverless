@@ -8,7 +8,7 @@ const {getResponse} = require("./utils/helpers");
 
 const userPoolID = "us-east-1_2rkoRbPkQ"
 const clientID="60nfoimdh905l85mfjndrjka09"
-module.exports.xxx = async (event) => {
+const xxx = async (event) => {
     // try {
     //     const cognito = new AWS.CognitoIdentityServiceProvider({
     //         apiVersion: "2016-04-18",
@@ -64,3 +64,5 @@ module.exports.xxx = async (event) => {
             },400)
     }
 }
+
+module.exports=xxx;

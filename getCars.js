@@ -3,7 +3,7 @@ import AWS from 'aws-sdk';
 const {getResponse} = require("./utils/helpers");
 
 const {DYNAMODB_CAR_TABLE} = process.env;
- export const cars = async (event) => {
+const cars = async (event) => {
     try {
         console.log(event);
         const {userId} = event.pathParameters;
@@ -51,4 +51,6 @@ const {DYNAMODB_CAR_TABLE} = process.env;
             }, 400)
         }
     }
+
+module.exports=cars
 

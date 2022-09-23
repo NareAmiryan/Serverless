@@ -1,8 +1,9 @@
 'use strict'
 const AWS = require('aws-sdk')
 
-module.exports.getUser = async (event) => {
+const getUser = async (event) => {
     /////////////////// GetItem,get item in primary key
+    try {
      console.log(event);
      const  { name }  = event.pathParameters;
         const params = {
@@ -13,7 +14,7 @@ module.exports.getUser = async (event) => {
         };
 
      const db = new AWS.DynamoDB.DocumentClient();
-     try {
+
         console.log(params);
         const data=await db.get(params).promise();
         console.log(data);
@@ -57,4 +58,5 @@ module.exports.getUser = async (event) => {
         // }
 }
 
+module.exports=getUser;
 

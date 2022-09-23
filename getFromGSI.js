@@ -1,7 +1,8 @@
 'use strict'
 const AWS = require('aws-sdk')
 
-module.exports.getFromGSI = async () => {
+const getFromGSI = async () => {
+    try {
     const params = {
         TableName: process.env.DYNAMODB_USER_TABLE,
         IndexName: "Email-index",
@@ -15,7 +16,7 @@ module.exports.getFromGSI = async () => {
     };
 
     const db = new AWS.DynamoDB.DocumentClient();
-    try {
+
         console.log(params);
         const data = await db.query(params).promise();
         console.log(data);
@@ -31,3 +32,5 @@ module.exports.getFromGSI = async () => {
         return err
     }
 }
+
+module.exports=getFromGSI;

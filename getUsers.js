@@ -1,11 +1,12 @@
 'use strict'
 const AWS = require('aws-sdk')
 //Pagination
-module.exports.getUsers = async (event) => {
+const getUsers = async (event) => {
+    try {
     console.log(event);
     const  { startKey, limit = 5, name }  = event.queryStringParameters;
     const db = new AWS.DynamoDB.DocumentClient();
-    try {
+
         let queryParams = {
             TableName: process.env.DYNAMODB_USER_TABLE,
             Limit: limit
@@ -46,3 +47,5 @@ module.exports.getUsers = async (event) => {
         return err
     }
 }
+
+module.exports=getUsers;

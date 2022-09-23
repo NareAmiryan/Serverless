@@ -6,14 +6,15 @@ const pg = require('pg');
 
 const { DYNAMODB_CAR_TABLE } = process.env;
 
-module.exports.cars = async (event) => {
+const cars = async (event) => {
+    try {
         console.log(event);
         const body=JSON.parse(event.body)
         console.log(body);
         const username = event.requestContext?.authorizer?.claims?.['cognito:username'];
 
         const dynamoDb = new AWS.DynamoDB.DocumentClient();
-        try {
+
         const putParams = {
             TableName: DYNAMODB_CAR_TABLE,
             Item: {
@@ -43,6 +44,7 @@ module.exports.cars = async (event) => {
     }
 }
 
+module.exports= cars;
 
 //{
 //     "Version": "2012-10-17",

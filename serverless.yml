@@ -72,6 +72,7 @@ custom:
     minify: true
     external:
         - pg-native
+        - pg
   developerStage: ${env:DEVELOPER_IDENTIFIER,'local'}
   DB_NAME: kms_db_${self:provider.stage}
 #  DB_USERNAME: ${ssm:/kms-${self:provider.stage}/db_username}
@@ -289,7 +290,7 @@ functions:
               - '*'
 
   SequelizeCreateCar:
-    handler: createCarInSequelize.cars
+    handler: createCarInSequelize.seqCars
     events:
       - http:
           path: createCarInSequelize/users/createcars

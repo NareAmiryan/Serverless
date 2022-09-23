@@ -3,7 +3,7 @@
 const AWS = require('aws-sdk');
 
 const userPoolID = "us-east-1_2rkoRbPkQ"
-module.exports.createUsers = async (event) => {
+ const createUsers = async (event) => {
     try {
         const {name, email,password} = JSON.parse(event.body);
         console.log(event);
@@ -48,6 +48,7 @@ module.exports.createUsers = async (event) => {
     }
 }
 
+module.exports = createUsers;
 /*
 Create user in dynamo-db
 

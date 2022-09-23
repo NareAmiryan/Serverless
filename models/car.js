@@ -1,5 +1,3 @@
-const { Sequelize,Model , DataTypes } = require('sequelize')
-
 module.exports = function (sequelize, DataTypes) {
     const cars = sequelize.define("cars", {
         cars_id: {
@@ -22,3 +20,4 @@ module.exports = function (sequelize, DataTypes) {
     })
     return cars
 };
+
